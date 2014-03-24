@@ -57,7 +57,15 @@ module GDash
             default = (options[:default].is_a?(Array) || options[:default].is_a?(Hash)) ? options[:default].dup : options[:default]
             proto = (options[:prototype] && @prototype.present? && @prototype.respond_to?(name)) ? @prototype.send(name) : default
             instance_variable_set instance_variable, [] if instance_variable_get(instance_variable).nil?
-            proto + instance_variable_get(instance_variable)
+
+            ## TODO - Cuz says, "Make this suck less"
+            (proto + instance_variable_get(instance_variable)).sort do |x, y|
+              if x.is_a?(Base) && x.options.has_key?(:before) && x.options[:before] == :all
+                -1
+              else
+                0
+              end
+            end
           else
             instance_variable_set instance_variable, *args
           end
