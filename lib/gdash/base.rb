@@ -46,6 +46,19 @@ module GDash
         end
       end
 
+      ## TODO - Cuz says, "Make this suck less"
+      def compare_order x, y
+        if (x.is_a?(Base) && x.options.has_key?(:before) && x.options[:before] == :all) && (y.is_a?(Base) && y.options.has_key?(:before) && y.options[:before] == :all)
+          0
+        elsif (x.is_a?(Base) && x.options.has_key?(:before) && x.options[:before] == :all)
+          -1
+        elsif (y.is_a?(Base) && y.options.has_key?(:before) && y.options[:before] == :all)
+          1
+        else
+          0
+        end
+      end
+
       def collection name, options = {}, &block
         instance_variable = "@#{name.to_s.pluralize}"
         options = { :default => [], :prototype => true }.merge options
@@ -58,14 +71,7 @@ module GDash
             proto = (options[:prototype] && @prototype.present? && @prototype.respond_to?(name)) ? @prototype.send(name) : default
             instance_variable_set instance_variable, [] if instance_variable_get(instance_variable).nil?
 
-            ## TODO - Cuz says, "Make this suck less"
-            (proto + instance_variable_get(instance_variable)).sort do |x, y|
-              if x.is_a?(Base) && x.options.has_key?(:before) && x.options[:before] == :all
-                -1
-              else
-                0
-              end
-            end
+            (proto + instance_variable_get(instance_variable)).sort &Base.method(:compare_order)
           else
             instance_variable_set instance_variable, *args
           end
