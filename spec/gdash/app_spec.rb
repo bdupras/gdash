@@ -1,6 +1,5 @@
 require "spec_helper"
 
-
 module GDash
   describe App do
     include Rack::Test::Methods
@@ -30,13 +29,13 @@ module GDash
     end
 
     describe "Showing a dashboard" do
-      describe "when :name is a defined dashboard" do
+      describe "when :name is not a defined dashboard" do
         subject { get "/dashboards/foo" }
 
-        it { should be_ok }
-        its(:body) { should =~ /#{Regexp.escape(View.new(Dashboard[:foo], :window => Window.default).to_html)}/ }
+        it { should be_not_found }
+        its(:body) { should =~ /Dashboards/ }
       end
-      
+
       # describe :window do
       #   let!(:foo) { Window.define :foo }
       #   let!(:bar) { Window.define :bar }
@@ -51,7 +50,7 @@ module GDash
       #     dashboard.window.start.should == DateTime.parse("2012-01-01 01:00:00")
       #     dashboard.window.length.should == 3600.seconds
       #   end
-        
+
       #   it "uses the default window if not specified" do
       #     get "/dashboards/foo"
       #     dashboard.window.should == Window.default
@@ -72,7 +71,7 @@ module GDash
           end
         end
         after { File.unlink File.expand_path(File.join(File.dirname(__FILE__), %w{.. .. doc foo.md})) }
-        
+
         subject { get "/doc/foo" }
 
         it { should be_ok }

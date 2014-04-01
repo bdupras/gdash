@@ -33,6 +33,10 @@ module GDash
       end
     end
 
+    not_found do
+      haml :index, :layout => false
+    end
+
     get "/doc/:filename" do
       @doc = Doc.new(params["filename"])
       erb @doc.to_html, :layout => :doc, :layout_engine => :haml
@@ -45,15 +49,17 @@ module GDash
     get "/dashboards/?*" do
       args = (params[:splat] || [""]).first.split(/\//).reject { |x| x.empty? }
 
-      @dashboard = args.empty? ? Dashboard.all.first : Dashboard[args.shift]
+      redirect "/dashboards/#{Dashboard.all.first.name}" if args.empty?
+
+      @dashboard = Dashboard[args.shift]
+      halt 404 unless @dashboard
+
       page = args.empty? ? @dashboard.pages.first : @dashboard.find(args.shift)
+      halt 404 unless page
+
       tab_path = args
 
-      if @dashboard
-        haml View.new(@dashboard, :window => @window, :page => page, :tab_path => tab_path).to_html
-      else
-        redirect dashboards_path
-      end
+      haml View.new(@dashboard, :window => @window, :page => page, :tab_path => tab_path).to_html
     end
 
     get "/snapshot" do
